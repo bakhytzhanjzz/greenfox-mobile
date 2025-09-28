@@ -4,7 +4,7 @@ import 'session.dart';
 class ApiClient {
   static final String baseUrl = const String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8080/api', // Android emulator to localhost
+    defaultValue: 'https://greenfox-backend.onrender.com/api',
   );
 
   final Dio dio;
@@ -21,13 +21,15 @@ class ApiClient {
 
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        if (await Session.instance.hasToken()) {
-          options.headers['Authorization'] = 'Bearer ${Session.instance.token}';
+        final token = await Session.instance.token;
+        if (token != null && token.isNotEmpty) {
+          options.headers['Authorization'] = 'Bearer $token';
         }
         handler.next(options);
       },
       onError: (e, handler) async {
         if (e.response?.statusCode == 401) {
+          // No token or invalid token
           await Session.instance.clear();
         }
         handler.next(e);
@@ -37,4 +39,3 @@ class ApiClient {
     return ApiClient._(dio);
   }
 }
-//https://greenfox-backend.onrender.com/api

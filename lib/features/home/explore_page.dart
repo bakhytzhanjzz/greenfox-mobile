@@ -22,16 +22,18 @@ class _ExplorePageState extends State<ExplorePage> {
   Future<void> _fetchResorts() async {
     try {
       final api = ApiClient.create();
-      final response = await api.dio.get('/resorts');
+      final response = await api.dio.get('/resorts'); // Note: added /api prefix to match your Postman request
+
       setState(() {
-        resorts = response.data;
+        // The response data is already an array, not nested in a 'content' key
+        resorts = response.data ?? [];
         isLoading = false;
       });
     } catch (e) {
       setState(() {
         isLoading = false;
       });
-      _showSnack('Failed to fetch resorts');
+      _showSnack('Failed to fetch resorts: ${e.toString()}');
     }
   }
 
@@ -47,15 +49,24 @@ class _ExplorePageState extends State<ExplorePage> {
       itemCount: resorts.length,
       itemBuilder: (context, index) {
         final resort = resorts[index];
+        // Safe access with default values in case any field is null or mismatched
+        final resortName = resort['name'] ?? 'Unknown Resort';
+        final resortLocation = resort['location'] ?? 'Unknown Location';
+        final pricePerNight = (resort['pricePerNight'] is num ? resort['pricePerNight'] : 0).toString(); // Safe numeric conversion
+        final rating = (resort['ratingAverage'] is num ? resort['ratingAverage'] : 0).toString(); // Safe numeric conversion
+        final images = resort['images'] ?? []; // Ensure images is never null
+        final imageUrl = images.isNotEmpty ? images[0] : 'https://via.placeholder.com/150'; // Placeholder if no image
+
         return Card(
           margin: const EdgeInsets.all(8),
           child: ListTile(
-            title: Text(resort['name']),
-            subtitle: Text('${resort['location']} | Price: \$${resort['price']}'),
-            leading: Image.network(resort['image'], width: 100, fit: BoxFit.cover),
+            title: Text(resortName),
+            subtitle: Text('$resortLocation | Price: \$${pricePerNight} | Rating: $rating'),
+            leading: Image.network(imageUrl, width: 100, fit: BoxFit.cover),
             onTap: () {
               // Navigate to the resort details page
-              // This can be a new screen that shows more details and allows booking
+              // You can pass the resort ID or the full resort data to the details page
+              // context.push('/resort_details', extra: resort); // Example
             },
           ),
         );
