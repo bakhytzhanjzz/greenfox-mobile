@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'features/auth/login_page.dart';
+import 'features/auth/register_page.dart'; // Import RegisterPage
 import 'features/home/home_page.dart';
 import 'features/splash/splash_screen.dart';
 import 'features/auth/role_selection_page.dart';
@@ -10,7 +11,6 @@ GoRouter buildRouter() {
   return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) async {
-      // Token check already happens in splash screen, so this is now redundant
       final hasToken = await Session.instance.hasToken();
       final loggingIn = state.matchedLocation == '/login';
       if (hasToken && loggingIn) return '/home';
@@ -23,7 +23,7 @@ GoRouter buildRouter() {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      // Role selection route (only Client option for now)
+      // Role selection route
       GoRoute(
         path: '/role_selection',
         builder: (context, state) => const RoleSelectionPage(),
@@ -32,6 +32,11 @@ GoRouter buildRouter() {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginPage(),
+      ),
+      // Register route
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterPage(),
       ),
       // Home route
       GoRoute(

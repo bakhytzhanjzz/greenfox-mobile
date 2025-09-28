@@ -105,7 +105,10 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const Spacer(),
               TextButton(
-                onPressed: () {}, // TODO: register/forgot later
+                onPressed: () {
+                  // Navigate to RegisterPage
+                  context.go('/register');
+                },
                 child: const Text('Create account'),
               ),
             ],
