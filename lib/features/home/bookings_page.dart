@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import '../../core/api_client.dart';
 
 class BookingsPage extends StatefulWidget {
@@ -22,7 +21,7 @@ class _BookingsPageState extends State<BookingsPage> {
   Future<void> _fetchBookings() async {
     try {
       final api = ApiClient.create();
-      final response = await api.dio.get('/bookings');
+      final response = await api.dio.get('/bookings/me'); // ✅ secure endpoint
       setState(() {
         bookings = response.data;
         isLoading = false;
@@ -36,24 +35,46 @@ class _BookingsPageState extends State<BookingsPage> {
   }
 
   void _showSnack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
   Widget build(BuildContext context) {
-    return isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : ListView.builder(
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (bookings.isEmpty) {
+      return const Center(child: Text("No bookings found"));
+    }
+
+    return ListView.builder(
       itemCount: bookings.length,
       itemBuilder: (context, index) {
         final booking = bookings[index];
         return Card(
           margin: const EdgeInsets.all(8),
           child: ListTile(
-            title: Text(booking['resortName']),
-            subtitle: Text('Booked: ${booking['date']}'),
+            title: Text(
+              booking['resortName'] ?? 'Unknown Resort',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              'Check-in: ${booking['checkInDate']}\n'
+                  'Check-out: ${booking['checkOutDate']}\n'
+                  'Guests: ${booking['guests']}\n'
+                  'Status: ${booking['status']}',
+            ),
+            trailing: Text(
+              '${booking['totalPrice']} ₸',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+            ),
             onTap: () {
-              // Navigate to booking details (if any more details needed)
+              // TODO: navigate to booking details page if needed
             },
           ),
         );
