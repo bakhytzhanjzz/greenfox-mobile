@@ -10,32 +10,38 @@ class ExplorePage extends StatefulWidget {
 }
 
 class _ExplorePageState extends State<ExplorePage> {
-  List<dynamic> resorts = [];
+  List<dynamic> bookedResorts = [];  // List to store the resorts that the user has booked
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchResorts();
+    _fetchBookedResorts();
   }
 
-  Future<void> _fetchResorts() async {
+  Future<void> _fetchBookedResorts() async {
     try {
       final api = ApiClient.create();
-      final response = await api.dio.get('/resorts'); // Note: added /api prefix to match your Postman request
+
+      print('Fetching all resorts...');
+      final resortResponse = await api.dio.get('/resorts');
 
       setState(() {
-        // The response data is already an array, not nested in a 'content' key
-        resorts = response.data ?? [];
+        bookedResorts = resortResponse.data ?? [];
         isLoading = false;
       });
+
+      print('Fetched resorts count: ${bookedResorts.length}');
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
+      if (e is DioException) {
+        print('Status code: ${e.response?.statusCode}');
+        print('Response data: ${e.response?.data}');
+      }
       _showSnack('Failed to fetch resorts: ${e.toString()}');
     }
   }
+
 
   void _showSnack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
@@ -46,16 +52,15 @@ class _ExplorePageState extends State<ExplorePage> {
     return isLoading
         ? const Center(child: CircularProgressIndicator())
         : ListView.builder(
-      itemCount: resorts.length,
+      itemCount: bookedResorts.length,
       itemBuilder: (context, index) {
-        final resort = resorts[index];
-        // Safe access with default values in case any field is null or mismatched
+        final resort = bookedResorts[index];
         final resortName = resort['name'] ?? 'Unknown Resort';
         final resortLocation = resort['location'] ?? 'Unknown Location';
-        final pricePerNight = (resort['pricePerNight'] is num ? resort['pricePerNight'] : 0).toString(); // Safe numeric conversion
-        final rating = (resort['ratingAverage'] is num ? resort['ratingAverage'] : 0).toString(); // Safe numeric conversion
-        final images = resort['images'] ?? []; // Ensure images is never null
-        final imageUrl = images.isNotEmpty ? images[0] : 'https://via.placeholder.com/150'; // Placeholder if no image
+        final pricePerNight = (resort['pricePerNight'] is num ? resort['pricePerNight'] : 0).toString();
+        final rating = (resort['ratingAverage'] is num ? resort['ratingAverage'] : 0).toString();
+        final images = resort['images'] ?? [];
+        final imageUrl = images.isNotEmpty ? images[0] : 'https://via.placeholder.com/150';
 
         return Card(
           margin: const EdgeInsets.all(8),
