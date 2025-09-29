@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../../core/api_client.dart';
+import 'package:go_router/go_router.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -69,10 +70,9 @@ class _ExplorePageState extends State<ExplorePage> {
             subtitle: Text('$resortLocation | Price: \$${pricePerNight} | Rating: $rating'),
             leading: Image.network(imageUrl, width: 100, fit: BoxFit.cover),
             onTap: () {
-              // Navigate to the resort details page
-              // You can pass the resort ID or the full resort data to the details page
-              // context.push('/resort_details', extra: resort); // Example
+              context.push('/resort_details', extra: resort);
             },
+
           ),
         );
       },
